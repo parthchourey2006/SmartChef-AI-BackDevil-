@@ -31,14 +31,6 @@ export default function DashboardPage() {
     const data = await res.json()
     console.log(data)
   }
-  if (ingredients.length === 0) return
-
-  setViewState("loading")
-  setShowScience(false)
-
-  const data = await fetchRecipes(ingredients)
-
-  console.log(data)
 
   setRecipes(data)
   setViewState("results")
