@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
   setRecipes(data)
   setViewState("results")
-}, [])
+}
 
 const handleViewSubstitutions = useCallback(() => {
   setShowScience(true)
