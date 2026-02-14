@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartChef AI - Zero Waste Cooking</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sage: #6B8E6F;
+            --sage-dark: #4A6B4D;
+            --cream: #FFF8F0;
+            --burnt: #D4734D;
+            --charcoal: #2C2C2C;
+            --sand: #E8DCC4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--sand) 100%);
+            color: var(--charcoal);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .logo {
+            font-family: 'Instrument Serif', serif;
+            font-size: 4.5rem;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--sage-dark);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--burnt);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        
+        .stat-highlight {
+            background: rgba(107, 142, 111, 0.1);
+            border: 2px solid var(--sage);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            animation: fadeIn 1s ease 0.3s backwards;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--sage-dark);
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--charcoal);
+            margin-top: 0.5rem;
+        }
+        
+        .input-section {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+        
+        .input-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--burnt) 100%);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--charcoal);
+        }
+        
+        .ingredient-input-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ingredient-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--sand);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--cream);
+        }
+        
+        .ingredient-input:focus {
+            outline: none;
+            border-color: var(--sage);
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(107, 142, 111, 0.15);
+        }
+        
+        .add-btn {
+            padding: 1rem 2rem;
+            background: var(--sage);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .add-btn:hover {
+            background: var(--sage-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(107, 142, 111, 0.3);
+        }
+        
+        .ingredient-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ingredient-tag {
+            background: var(--sage);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            animation: popIn 0.3s ease;
+        }
+        
+        .remove-tag {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .remove-tag:hover {
+            background: rgba(255,255,255,0.4);
+            transform: rotate(90deg);
+        }
+        
+        .find-recipes-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, var(--burnt) 0%, #B85E3D 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .find-recipes-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(212, 115, 77, 0.4);
+        }
+        
+        .find-recipes-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--sage);
+        }
+        
+        .spinner {
+            border: 3px solid var(--sand);
+            border-top: 3px solid var(--sage);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        .view-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .toggle-btn {
+            padding: 0.75rem 2rem;
+            border: 2px solid var(--sage);
+            background: white;
+            color: var(--sage);
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-btn.active {
+            background: var(--sage);
+            color: white;
+        }
+        
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results-container {
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .utilization-card {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        .utilization-value {
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0.5rem 0;
+        }
+        
+        /* Grid View */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .recipe-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .recipe-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--sage), var(--burnt));
+        }
+        
+        .recipe-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        /* Swipe View */
+        .swipe-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            height: 600px;
+        }
+        
+        .swipe-card {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .swipe-card.swiping {
+            cursor: grabbing;
+        }
+        
+        .swipe-card.swipe-left {
+            transform: translateX(-150%) rotate(-15deg);
+            opacity: 0;
+        }
+        
+        .swipe-card.swipe-right {
+            transform: translateX(150%) rotate(15deg);
+            opacity: 0;
+        }
+        
+        .swipe-indicator {
+            position: absolute;
+            top: 2rem;
+            font-size: 3rem;
+            font-weight: 900;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .swipe-indicator.left {
+            left: 2rem;
+            color: #ff4444;
+        }
+        
+        .swipe-indicator.right {
+            right: 2rem;
+            color: #44ff44;
+        }
+        
+        .swipe-card.dragging-left .swipe-indicator.left,
+        .swipe-card.dragging-right .swipe-indicator.right {
+            opacity: 1;
+        }
+        
+        .swipe-actions {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .swipe-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .swipe-btn.dislike {
+            background: #ff4444;
+            color: white;
+        }
+        
+        .swipe-btn.like {
+            background: #ff6b9d;
+            color: white;
+        }
+        
+        .swipe-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+        
+        .swipe-btn:active {
+            transform: scale(1.05);
+        }
+        
+        .liked-count {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--burnt);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .liked-count:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+        
+        .liked-recipes-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            padding: 2rem;
+        }
+        
+        .liked-recipes-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+        }
+        
+        .match-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--burnt);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .recipe-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-right: 4rem;
+        }
+        
+        .recipe-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            color: var(--sage-dark);
+            font-size: 0.9rem;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--sand);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: var(--burnt);
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .modal-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: var(--charcoal);
+        }
+        
+        .modal-section {
+            margin-bottom: 2rem;
+        }
+        
+        .modal-section h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--sage-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .ingredients-list {
+            list-style: none;
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .ingredients-list li {
+            padding: 0.75rem;
+            background: var(--cream);
+            border-radius: 8px;
+        }
+        
+        .instructions-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        
+        .instructions-list li {
+            counter-increment: step-counter;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--cream);
+            border-radius: 8px;
+            position: relative;
+            padding-left: 3.5rem;
+        }
+        
+        .instructions-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--sage);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 3rem;
+            }
+            
+            .recipe-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ingredient-input-container {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain-overlay"></div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function App() {
+            const [ingredients, setIngredients] = useState([]);
+            const [currentInput, setCurrentInput] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [results, setResults] = useState(null);
+            const [error, setError] = useState(null);
+            const [viewMode, setViewMode] = useState('swipe'); // 'grid' or 'swipe'
+            const [selectedRecipe, setSelectedRecipe] = useState(null);
+            const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
+            const [likedRecipes, setLikedRecipes] = useState([]);
+            const [showLikedRecipes, setShowLikedRecipes] = useState(false);
+            const [dragStart, setDragStart] = useState(null);
+            const [dragOffset, setDragOffset] = useState(0);
+            const [swipeDirection, setSwipeDirection] = useState(null);
+
+            const addIngredient = () => {
+                if (currentInput.trim() && !ingredients.includes(currentInput.trim())) {
+                    setIngredients([...ingredients, currentInput.trim()]);
+                    setCurrentInput('');
+                }
+            };
+
+            const removeIngredient = (ingredient) => {
+                setIngredients(ingredients.filter(i => i !== ingredient));
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    addIngredient();
+                }
+            };
+
+            const findRecipes = async () => {
+                if (ingredients.length === 0) {
+                    alert('Please add at least one ingredient');
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                setCurrentSwipeIndex(0);
+                setLikedRecipes([]);
+
+                try {
+                    const BACKEND_URL = 'http://localhost:5000';
+                    
+                    const response = await fetch(`${BACKEND_URL}/api/recipes`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ ingredients })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    setResults(data);
+                } catch (err) {
+                    setError('Failed to fetch recipes. Make sure the backend is running on http://localhost:5000');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleSwipe = (direction) => {
+                setSwipeDirection(direction);
+                
+                if (direction === 'right') {
+                    setLikedRecipes([...likedRecipes, results.recipes[currentSwipeIndex]]);
+                }
+                
+                setTimeout(() => {
+                    setSwipeDirection(null);
+                    if (currentSwipeIndex < results.recipes.length - 1) {
+                        setCurrentSwipeIndex(currentSwipeIndex + 1);
+                    }
+                    setDragOffset(0);
+                }, 300);
+            };
+
+            const handleMouseDown = (e) => {
+                setDragStart({ x: e.clientX, y: e.clientY });
+            };
+
+            const handleMouseMove = (e) => {
+                if (dragStart) {
+                    const offset = e.clientX - dragStart.x;
+                    setDragOffset(offset);
+                }
+            };
+
+            const handleMouseUp = () => {
+                if (Math.abs(dragOffset) > 100) {
+                    handleSwipe(dragOffset > 0 ? 'right' : 'left');
+                }
+                setDragStart(null);
+                setDragOffset(0);
+            };
+
+            return (
+                <div className="app-container">
+                    {results && likedRecipes.length > 0 && viewMode === 'swipe' && (
+                        <div className="liked-count" onClick={() => setShowLikedRecipes(true)}>
+                            ❤️ {likedRecipes.length} Saved
+                        </div>
+                    )}
+                    
+                    <header className="header">
+                        <h1 className="logo">SmartChef AI</h1>
+                        <p className="tagline">Cook What You Have, Waste Nothing</p>
+                        
+                        <div className="stat-highlight">
+                            <span className="stat-number">40%</span>
+                            <p className="stat-label">of household food waste comes from not knowing what to cook with available ingredients</p>
+                        </div>
+                    </header>
+
+                    <div className="input-section">
+                        <h2 className="section-title">What's in your fridge?</h2>
+                        
+                        <div className="ingredient-input-container">
+                            <input
+                                type="text"
+                                className="ingredient-input"
+                                placeholder="Enter an ingredient (e.g., tomatoes, chicken, rice)"
+                                value={currentInput}
+                                onChange={(e) => setCurrentInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                            <button className="add-btn" onClick={addIngredient}>
+                                Add
+                            </button>
+                        </div>
+
+                        {ingredients.length > 0 && (
+                            <div className="ingredient-tags">
+                                {ingredients.map((ingredient, index) => (
+                                    <div key={index} className="ingredient-tag">
+                                        {ingredient}
+                                        <button 
+                                            className="remove-tag"
+                                            onClick={() => removeIngredient(ingredient)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <button 
+                            className="find-recipes-btn"
+                            onClick={findRecipes}
+                            disabled={ingredients.length === 0 || loading}
+                        >
+                            {loading ? 'Finding Recipes...' : 'Find Recipes'}
+                        </button>
+                    </div>
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>Analyzing your ingredients and finding perfect matches...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div style={{
+                            background: '#ffebee',
+                            color: '#c62828',
+                            padding: '1.5rem',
+                            borderRadius: '12px',
+                            marginBottom: '2rem',
+                            textAlign: 'center'
+                        }}>
+                            {error}
+                        </div>
+                    )}
+
+                    {results && !loading && (
+                        <div className="results-container">
+                            <div className="utilization-card">
+                                <p style={{opacity: 0.9, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.9rem'}}>
+                                    Your Fridge Utilization Score
+                                </p>
+                                <div className="utilization-value">{results.fridge_utilization}%</div>
+                                <p style={{opacity: 0.9}}>
+                                    You're making great use of your ingredients!
+                                </p>
+                            </div>
+
+                            <div className="view-toggle">
+                                <button 
+                                    className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                                    onClick={() => setViewMode('grid')}
+                                >
+                                    📋 Grid View
+                                </button>
+                                <button 
+                                    className={`toggle-btn ${viewMode === 'swipe' ? 'active' : ''}`}
+                                    onClick={() => setViewMode('swipe')}
+                                >
+                                    👆 Swipe Mode
+                                </button>
+                            </div>
+
+                            {viewMode === 'grid' ? (
+                                <div className="recipe-grid">
+                                    {results.recipes.map((recipe) => (
+                                        <div 
+                                            key={recipe.id} 
+                                            className="recipe-card"
+                                            onClick={() => setSelectedRecipe(recipe)}
+                                        >
+                                            <div className="match-badge">
+                                                {recipe.match_score}% Match
+                                            </div>
+                                            
+                                            <h3 className="recipe-title">{recipe.title}</h3>
+                                            
+                                            <div className="recipe-meta">
+                                                <div>🔥 {recipe.calories} cal</div>
+                                                <div>⏱️ {recipe.total_time} min</div>
+                                                <div>👥 {recipe.servings} servings</div>
+                                            </div>
+
+                                            {recipe.missing_ingredients && recipe.missing_ingredients.length > 0 && (
+                                                <div style={{
+                                                    background: 'var(--cream)',
+                                                    padding: '0.75rem',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.9rem',
+                                                    marginTop: '1rem'
+                                                }}>
+                                                    <strong>Missing:</strong> {recipe.missing_ingredients.join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div>
+                                    {currentSwipeIndex < results.recipes.length ? (
+                                        <div className="swipe-container">
+                                            <div 
+                                                className={`swipe-card ${swipeDirection === 'left' ? 'swipe-left' : ''} ${swipeDirection === 'right' ? 'swipe-right' : ''} ${dragOffset < -100 ? 'dragging-left' : ''} ${dragOffset > 100 ? 'dragging-right' : ''}`}
+                                                style={{
+                                                    transform: dragStart && !swipeDirection ? `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)` : 'none'
+                                                }}
+                                                onMouseDown={handleMouseDown}
+                                                onMouseMove={handleMouseMove}
+                                                onMouseUp={handleMouseUp}
+                                                onMouseLeave={handleMouseUp}
+                                            >
+                                                <div className="swipe-indicator left">✗</div>
+                                                <div className="swipe-indicator right">✓</div>
+                                                
+                                                <div className="match-badge">
+                                                    {results.recipes[currentSwipeIndex].match_score}% Match
+                                                </div>
+                                                
+                                                <h3 className="recipe-title">{results.recipes[currentSwipeIndex].title}</h3>
+                                                
+                                                <div className="recipe-meta">
+                                                    <div>🔥 {results.recipes[currentSwipeIndex].calories} cal</div>
+                                                    <div>⏱️ {results.recipes[currentSwipeIndex].total_time} min</div>
+                                                    <div>👥 {results.recipes[currentSwipeIndex].servings} servings</div>
+                                                </div>
+
+                                                {results.recipes[currentSwipeIndex].missing_ingredients && results.recipes[currentSwipeIndex].missing_ingredients.length > 0 && (
+                                                    <div style={{
+                                                        background: 'var(--cream)',
+                                                        padding: '0.75rem',
+                                                        borderRadius: '8px',
+                                                        fontSize: '0.9rem',
+                                                        marginTop: '1rem'
+                                                    }}>
+                                                        <strong>Missing:</strong> {results.recipes[currentSwipeIndex].missing_ingredients.join(', ')}
+                                                    </div>
+                                                )}
+
+                                                <div style={{
+                                                    marginTop: '1.5rem',
+                                                    textAlign: 'center',
+                                                    padding: '1rem',
+                                                    background: 'var(--sand)',
+                                                    borderRadius: '12px',
+                                                    cursor: 'pointer'
+                                                }}
+                                                onClick={() => setSelectedRecipe(results.recipes[currentSwipeIndex])}
+                                                >
+                                                    <strong>Click to view full recipe →</strong>
+                                                </div>
+                                            </div>
+
+                                            <div className="swipe-actions">
+                                                <button className="swipe-btn dislike" onClick={() => handleSwipe('left')}>
+                                                    ✕
+                                                </button>
+                                                <button className="swipe-btn like" onClick={() => handleSwipe('right')}>
+                                                    ❤
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div style={{textAlign: 'center', padding: '3rem'}}>
+                                            <h3>No more recipes!</h3>
+                                            <p style={{marginTop: '1rem'}}>You liked {likedRecipes.length} recipe(s)</p>
+                                            <button 
+                                                className="find-recipes-btn"
+                                                style={{marginTop: '2rem', maxWidth: '300px'}}
+                                                onClick={() => {
+                                                    setCurrentSwipeIndex(0);
+                                                    setLikedRecipes([]);
+                                                }}
+                                            >
+                                                Start Over
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {selectedRecipe && (
+                        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <button className="modal-close" onClick={() => setSelectedRecipe(null)}>
+                                    ×
+                                </button>
+                                
+                                <h2 className="modal-title">{selectedRecipe.title}</h2>
+                                
+                                <div className="recipe-meta" style={{marginBottom: '2rem'}}>
+                                    <div>🔥 {selectedRecipe.calories} cal</div>
+                                    <div>⏱️ {selectedRecipe.total_time} min</div>
+                                    <div>👥 {selectedRecipe.servings} servings</div>
+                                    <div>✨ {selectedRecipe.match_score}% Match</div>
+                                </div>
+
+                                <div className="modal-section">
+                                    <h3>📝 Ingredients</h3>
+                                    {selectedRecipe.ingredients && selectedRecipe.ingredients.length > 0 ? (
+                                        <ul className="ingredients-list">
+                                            {selectedRecipe.ingredients.map((ingredient, idx) => (
+                                                <li key={idx}>{ingredient}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p style={{color: 'var(--sage-dark)'}}>
+                                            Full ingredient details available when connected to RecipeDB
+                                        </p>
+                                    )}
+                                    {selectedRecipe.missing_ingredients && selectedRecipe.missing_ingredients.length > 0 && (
+                                        <div style={{
+                                            background: 'var(--cream)',
+                                            padding: '1rem',
+                                            borderRadius: '8px',
+                                            marginTop: '1rem'
+                                        }}>
+                                            <strong>Missing ingredients:</strong> {selectedRecipe.missing_ingredients.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {selectedRecipe.substitutions && selectedRecipe.substitutions.length > 0 && (
+                                    <div className="modal-section">
+                                        <h3>💡 Smart Substitutions</h3>
+                                        {selectedRecipe.substitutions.map((sub, idx) => (
+                                            <div key={idx} style={{
+                                                background: 'var(--cream)',
+                                                padding: '1rem',
+                                                borderRadius: '8px',
+                                                marginBottom: '0.5rem'
+                                            }}>
+                                                <strong>Instead of {sub.for}:</strong>
+                                                {sub.options.map((opt, optIdx) => (
+                                                    <div key={optIdx} style={{marginTop: '0.5rem', color: 'var(--sage-dark)'}}>
+                                                        ✓ {opt.ingredient} ({opt.score}% flavor match)
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="modal-section">
+                                    <h3>👨‍🍳 Instructions</h3>
+                                    {selectedRecipe.instructions && selectedRecipe.instructions.length > 0 ? (
+                                        <ol className="instructions-list">
+                                            {selectedRecipe.instructions.map((instruction, idx) => (
+                                                <li key={idx}>{instruction}</li>
+                                            ))}
+                                        </ol>
+                                    ) : (
+                                        <p style={{color: 'var(--sage-dark)'}}>
+                                            Detailed cooking instructions will be available when recipe details are fetched from the API.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {showLikedRecipes && (
+                        <div className="liked-recipes-modal" onClick={() => setShowLikedRecipes(false)}>
+                            <div className="liked-recipes-content" onClick={(e) => e.stopPropagation()}>
+                                <button className="modal-close" onClick={() => setShowLikedRecipes(false)}>
+                                    ×
+                                </button>
+                                
+                                <h2 className="modal-title">❤️ Your Saved Recipes ({likedRecipes.length})</h2>
+                                
+                                <div className="recipe-grid">
+                                    {likedRecipes.map((recipe) => (
+                                        <div 
+                                            key={recipe.id} 
+                                            className="recipe-card"
+                                            onClick={() => {
+                                                setSelectedRecipe(recipe);
+                                                setShowLikedRecipes(false);
+                                            }}
+                                        >
+                                            <div className="match-badge">
+                                                {recipe.match_score}% Match
+                                            </div>
+                                            
+                                            <h3 className="recipe-title">{recipe.title}</h3>
+                                            
+                                            <div className="recipe-meta">
+                                                <div>🔥 {recipe.calories} cal</div>
+                                                <div>⏱️ {recipe.total_time} min</div>
+                                                <div>👥 {recipe.servings} servings</div>
+                                            </div>
+
+                                            {recipe.missing_ingredients && recipe.missing_ingredients.length > 0 && (
+                                                <div style={{
+                                                    background: 'var(--cream)',
+                                                    padding: '0.75rem',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.9rem',
+                                                    marginTop: '1rem'
+                                                }}>
+                                                    <strong>Missing:</strong> {recipe.missing_ingredients.join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
