@@ -14,19 +14,22 @@ interface Particle {
   delay: number
 }
 
-function generateParticles(): Particle[] {
-  return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
-    id: i,
-    angle: (360 / PARTICLE_COUNT) * i,
-    radius: 52 + Math.random() * 16,
-    size: 3 + Math.random() * 3,
-    duration: 3 + Math.random() * 2,
-    delay: i * 0.15,
-  }))
+// Deterministic pseudo-random using a seed to avoid SSR/client mismatch
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 49297
+  return x - Math.floor(x)
 }
 
+const particles: Particle[] = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+  id: i,
+  angle: (360 / PARTICLE_COUNT) * i,
+  radius: 52 + seededRandom(i * 3 + 1) * 16,
+  size: 3 + seededRandom(i * 3 + 2) * 3,
+  duration: 3 + seededRandom(i * 3 + 3) * 2,
+  delay: i * 0.15,
+}))
+
 export function LoadingState() {
-  const [particles] = useState(generateParticles)
   const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState(0)
 

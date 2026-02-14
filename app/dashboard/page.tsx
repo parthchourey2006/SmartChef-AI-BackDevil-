@@ -28,13 +28,15 @@ export default function DashboardPage() {
   const [wishlistOpen, setWishlistOpen] = useState(false)
   const [wishlistRecipes, setWishlistRecipes] = useState<WishlistRecipe[]>([])
 
-  const handleGenerate = useCallback(async () => {
-    const data = await fetchRecipes(selectedIngredients)
-    setRecipes(data)
-    setViewState("results")
-
-
-    setRecipes(data)
+  const handleGenerate = useCallback(async (ingredients: string[]) => {
+    setSelectedIngredients(ingredients)
+    setViewState("loading")
+    try {
+      const data = await fetchRecipes(ingredients)
+      setRecipes(data)
+    } catch {
+      // fallback to showing results even on error
+    }
     setViewState("results")
   }, [])
 
