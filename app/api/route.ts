@@ -1,1 +1,1 @@
-const BACKEND_URL = 'https://inquisitive-beignet-eee4b0.netlify.app/'
+const BACKEND_URL = 'https://6990ef632485f0c346919bc2--inquisitive-beignet-eee4b0.netlify.app/'
