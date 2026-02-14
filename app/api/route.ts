@@ -1,0 +1,1 @@
+const BACKEND_URL = 'https://inquisitive-beignet-eee4b0.netlify.app/dashboard';
