@@ -26,11 +26,12 @@ export default function DashboardPage() {
   const [wishlistOpen, setWishlistOpen] = useState(false)
   const [wishlistRecipes, setWishlistRecipes] = useState<WishlistRecipe[]>([])
 
-  const handleGenerate = async () => {
-    const res = await fetch("/api/test", { method: "POST" })
-    const data = await res.json()
-    console.log(data)
-  }
+  const handleGenerate = useCallback(async () => {
+    const data = await fetchRecipes(selectedIngredients)
+    setRecipes(data)
+    setViewState("results")
+  }, [selectedIngredients])
+
 
   setRecipes(data)
   setViewState("results")
