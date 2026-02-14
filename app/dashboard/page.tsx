@@ -21,6 +21,8 @@ export default function DashboardPage() {
   const [showScience, setShowScience] = useState(false)
   const [resultsView, setResultsView] = useState<ResultsView>("swipe")
   const [recipes, setRecipes] = useState([])
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([])
+
 
   // Wishlist state
   const [wishlistOpen, setWishlistOpen] = useState(false)
