@@ -1,5 +1,5 @@
 "use client"
-
+import { fetchRecipes } from "@/lib/recipe"
 import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Leaf, ArrowLeft, Heart, LayoutGrid, Layers } from "lucide-react"
@@ -20,18 +20,24 @@ export default function DashboardPage() {
   const [viewState, setViewState] = useState<ViewState>("idle")
   const [showScience, setShowScience] = useState(false)
   const [resultsView, setResultsView] = useState<ResultsView>("swipe")
+  const [recipes, setRecipes] = useState([])
 
   // Wishlist state
   const [wishlistOpen, setWishlistOpen] = useState(false)
   const [wishlistRecipes, setWishlistRecipes] = useState<WishlistRecipe[]>([])
 
-  const handleGenerate = useCallback((ingredients: string[]) => {
+  const handleGenerate = useCallback(async (ingredients: string[]) => {
     if (ingredients.length === 0) return
+
     setViewState("loading")
     setShowScience(false)
-    setTimeout(() => {
-      setViewState("results")
-    }, 3200)
+
+    const data = await fetchRecipes(ingredients)
+
+    console.log(data)
+
+    setRecipes(data)
+    setViewState("results")
   }, [])
 
   const handleViewSubstitutions = useCallback(() => {
@@ -139,8 +145,8 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setResultsView("swipe")}
                     className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${resultsView === "swipe"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                       }`}
                   >
                     <Layers className="h-4 w-4" />
@@ -149,8 +155,8 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setResultsView("grid")}
                     className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${resultsView === "grid"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                       }`}
                   >
                     <LayoutGrid className="h-4 w-4" />
